@@ -1,7 +1,7 @@
 # rustcache
 
-> **Project 1 of 4** | Prereqs: None (this is where you start)
-> Sequence: **rustcache** → logforger → plugsmith → ironweave
+> **Project 1 of 6** | Prereqs: None (this is where you start)
+> Sequence: **rustcache** → rustfault → logforger → plugsmith → ironweave → voidforge
 
 An in-memory key-value cache with TTL expiration and LRU eviction, built in Rust.
 
