@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use chrono::{Duration, Utc};
+use chrono::Utc;
 
 #[derive(Debug, Hash, PartialEq, Clone)]
 pub enum Value {
@@ -29,10 +29,7 @@ impl KeyValueStore {
             key,
             MapValue {
                 value,
-                ttl: match ttl_secs {
-                    Some(sec) => Some(Utc::now().timestamp() + sec),
-                    None => None,
-                },
+                ttl: ttl_secs.map(|sec| Utc::now().timestamp() + sec),
             },
         );
         match res {
@@ -80,7 +77,10 @@ impl KeyValueStore {
                     ls.insert(0, value.clone());
                 }
             })
-            .or_insert( MapValue { value: Value::List(vec![value.clone()]), ttl: None });
+            .or_insert(MapValue {
+                value: Value::List(vec![value.clone()]),
+                ttl: None,
+            });
     }
 
     pub fn lrange(&self, key: &str, start: usize, stop: usize) {
@@ -102,6 +102,19 @@ impl KeyValueStore {
         match res {
             Some(val) => println!("REMOVED; value: {:?}", val),
             None => eprintln!("KEY NOT FOUND"),
+        }
+    }
+
+    pub fn get_ttl(&self, key: &str) -> i32 {
+        match self.0.get(key) {
+            Some(x) => match x.ttl {
+                Some(ttl) => {
+                    let remaining = ttl - Utc::now().timestamp();
+                    if remaining < 0 { 0 } else { remaining as i32 }
+                }
+                None => -1,
+            },
+            None => -2,
         }
     }
 }

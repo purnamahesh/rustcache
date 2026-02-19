@@ -1,5 +1,5 @@
+use crate::map_model::{KeyValueStore, Value};
 use std::io::stdin;
-use crate::map_model::{KeyValueStore, MapValue, Value};
 
 pub fn run(mut map: KeyValueStore) {
     let mut inp = String::new();
@@ -24,18 +24,20 @@ pub fn run(mut map: KeyValueStore) {
                 }
 
                 let ttl = if parts.len() == 5 {
-                    if ! parts[3].eq("EX") {
+                    if !parts[3].eq("EX") {
                         eprint!("ERROR: incorrect syntax; SET key value EX seconds");
                         continue;
                     }
                     match parts[4].parse::<i64>() {
                         Ok(sec) => {
                             if sec <= 1 {
-                                eprintln!("expiry seconds should be greater than or equal to 1 second");
+                                eprintln!(
+                                    "expiry seconds should be greater than or equal to 1 second"
+                                );
                                 continue;
-                            } 
+                            }
                             Some(sec)
-                        },
+                        }
                         Err(err) => {
                             eprintln!("ERROR: parsing {}, {:?}", parts[4], err);
                             continue;
@@ -51,7 +53,7 @@ pub fn run(mut map: KeyValueStore) {
                         Ok(val) => Value::Integer(val),
                         Err(_) => Value::String(parts[2].trim().to_string()),
                     },
-                    ttl
+                    ttl,
                 );
             }
             "INCR" => {
@@ -81,6 +83,21 @@ pub fn run(mut map: KeyValueStore) {
                     continue;
                 }
                 println!("{:?}", map.get_value(parts[1]));
+            }
+            "TTL" => {
+                if parts.len() != 2 {
+                    eprintln!("ERROR: provide exactly 2 args; TTL key");
+                    continue;
+                }
+                println!("{:?}", map.get_ttl(parts[1]));
+            }
+            "EXPIRE" => {
+                if parts.len() != 3 {
+                    eprintln!("ERROR: provide exactly 3 args; EXPIRE key seconds");
+                    continue;
+                }
+
+                
             }
             "DIS" => println!("{:?}", map),
             "LPUSH" => {
@@ -114,7 +131,6 @@ pub fn run(mut map: KeyValueStore) {
                 };
 
                 map.lrange(parts[1], start, stop)
-
             }
             "TYPE" => {
                 if parts.len() != 2 {
