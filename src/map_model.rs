@@ -122,7 +122,7 @@ impl KeyValueStore {
         match self.0.get_mut(key) {
             Some(mv) => {
                 if let Some(ttl) = &mut mv.ttl {
-                    *ttl = (Utc::now().timestamp() + ttl_sec) as i64; 
+                    *ttl = (Utc::now().timestamp() + ttl_sec) as i64;
                     -1
                 } else {
                     mv.ttl = Some((Utc::now().timestamp() + ttl_sec) as i64);
@@ -131,7 +131,5 @@ impl KeyValueStore {
             }
             None => -2,
         }
-
-        
     }
 }
