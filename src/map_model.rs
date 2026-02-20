@@ -117,4 +117,21 @@ impl KeyValueStore {
             None => -2,
         }
     }
+
+    pub fn set_ttl(&mut self, key: &str, ttl_sec: i64) -> i8 {
+        match self.0.get_mut(key) {
+            Some(mv) => {
+                if let Some(ttl) = &mut mv.ttl {
+                    *ttl = (Utc::now().timestamp() + ttl_sec) as i64; 
+                    -1
+                } else {
+                    mv.ttl = Some((Utc::now().timestamp() + ttl_sec) as i64);
+                    0
+                }
+            }
+            None => -2,
+        }
+
+        
+    }
 }

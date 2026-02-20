@@ -97,7 +97,21 @@ pub fn run(mut map: KeyValueStore) {
                     continue;
                 }
 
-                
+                let ttl_sec = match parts[2].parse::<i64>() {
+                    Ok(val) => {
+                        if val <= 0 {
+                            eprintln!("expire seconds should be greater than 0");
+                            continue;
+                        }
+                        val
+                    }
+                    Err(err) => {
+                        eprintln!("ERROR: parsing error {}", err);
+                        continue;
+                    }
+                };
+
+                println!("{}", map.set_ttl(parts[1], ttl_sec));
             }
             "DIS" => println!("{:?}", map),
             "LPUSH" => {
