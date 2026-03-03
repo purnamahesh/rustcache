@@ -1,5 +1,7 @@
 mod sub_commands;
 
+use chrono::Utc;
+
 use crate::cli::sub_commands::*;
 use crate::map_model::KeyValueStore;
 use std::{io::stdin, process::exit};
@@ -48,13 +50,18 @@ pub fn command_handler(parts: &Vec<&str>, map: &mut KeyValueStore) {
 
             map.lpush(parts[1].to_string(), parts[2].to_string());
         }
-        "LRANGE" => {}
+        "LRANGE" => {
+            lrange_command_handler(parts, map);
+        }
         "TYPE" => {
             if parts.len() != 2 {
                 eprintln!("ERROR: provide exactly 2 args; TYPE key");
                 return;
             }
             println!("{:?}", map.get_type(parts[1]));
+        }
+        "STATS" => {
+            println!("{:?}", map.get_stats());
         }
         "DIS" => println!("{:?}", map),
         "EXIT" => exit(0),
@@ -66,8 +73,15 @@ pub fn command_handler(parts: &Vec<&str>, map: &mut KeyValueStore) {
 
 pub fn run(mut map: KeyValueStore) {
     let mut inp = String::new();
+    let mut prev_window = 0;
 
     loop {
+        let current_window = Utc::now().timestamp() % 15;
+        if current_window != prev_window {
+            map.active_key_invalidate();
+            prev_window = current_window;
+        }
+
         stdin().read_line(&mut inp).unwrap_or_else(|err| {
             eprintln!("Error: {:?}", err);
             0_usize
